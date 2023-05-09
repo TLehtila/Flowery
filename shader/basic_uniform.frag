@@ -3,14 +3,19 @@
 in vec2 TexCoord;
 
 in vec3 ViewDir;
+in vec3 Normal;
+in vec4 Position;
 
 //take in the 3 light directions
 in struct LightDirection {
     vec3 direction;
 } lightDir[3];
 
+uniform float EdgeThreshold;
+uniform int Pass;
+
 layout (binding = 0) uniform sampler2D flowerTex;
-layout (binding = 1) uniform sampler2D normalTex;
+layout (binding = 1) uniform sampler2D leafTex;
 
 layout (location = 0) out vec4 FragColor;
 
@@ -28,7 +33,7 @@ uniform struct MaterialInfo {
     float Shininess;
 } Material;
 
-vec3 blinnphong(int index, vec3 n) {
+vec3 blinnphong(int index, vec3 n, vec4 pos) {
     vec3 texColour = texture(flowerTex, TexCoord).rgb;
 
     vec3 s = normalize(vec3(lightDir[index]));
@@ -55,12 +60,8 @@ vec3 blinnphong(int index, vec3 n) {
 void main() {
     vec3 Colour = vec3(0.0);
 
-    //normal from normal map
-    vec3 norm = texture(normalTex, TexCoord).xyz;
-    norm.xy = 2.0 * norm.xy - 1.0;
-
     for(int i = 0; i < 3; i++) {
-        Colour += blinnphong(i, norm);
+        Colour += blinnphong(i, normalize(Normal), Position);
     }
 
     FragColor = vec4(Colour, 1.0);

@@ -27,6 +27,7 @@ using glm::mat4;
 
 SceneBasic_Uniform::SceneBasic_Uniform() : plane(50.0f, 50.0f, 1, 1) {
     flower = ObjMesh::load("media/flowerTri.obj", false, true);
+    leaf = ObjMesh::load("media/leaf.obj", false, true);
 }
 
 
@@ -43,17 +44,19 @@ void SceneBasic_Uniform::initScene()
 
     //initialise rotation
     rotation = 0.0f;
-    
-    //load normal texture first as the program seems to use the last loaded texture for display
-    GLuint normalTex = Texture::loadTexture("media/texture/flowerNor.png");
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, normalTex);
 
-    //load colour texture
-    GLuint flowerTex = Texture::loadTexture("media/texture/flowerCol.jpg");
+    //load flower texture
+    flowerTex = Texture::loadTexture("media/texture/flowerCol.jpg");
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, flowerTex);
      
+    //load leaf texture
+    leafTex = Texture::loadTexture("media/texture/leafCol.jpg");
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, leafTex);
+
+
+
     float x, z;
 
     //set 3 light positions around the flower, slightly above it
@@ -66,7 +69,6 @@ void SceneBasic_Uniform::initScene()
         prog.setUniform(name.str().c_str(), view * glm::vec4(x, 5.2f, z + 1.0f, 0.0f));
     }
 
-    //prog.setUniform("lights[0].Position", vec4(0.0f, 0.5f, 0.0f, 0.0f));
 
     //set each light uniforms
     prog.setUniform("lights[0].La", vec3(0.3f, 0.3f, 0.3f));
@@ -114,7 +116,18 @@ void SceneBasic_Uniform::render()
     rotation += 0.1f;
     model = glm::rotate(model, glm::radians(rotation), vec3(0.0f, 1.0f, 0.0f));
     setMatrices();
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, flowerTex);
     flower->render();
+
+    //translation, scaling, rotating, rendering
+    model = mat4(1.0f);
+    model = glm::translate(model, vec3(1.0f, 1.1f, 0.0f));
+    model = glm::scale(model, vec3(0.5f, 0.5f, 0.5f));
+    setMatrices();
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, leafTex);
+    leaf->render();
 
     //set material properties for plane
     prog.setUniform("Material.Kd", 0.1f, 0.1f, 0.1f); 

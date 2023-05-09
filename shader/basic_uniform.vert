@@ -7,6 +7,8 @@ layout (location = 2) in vec2 VertexTexCoord;
 layout (location = 3) in vec4 VertexTangent;
 
 out vec2 TexCoord;
+out vec3 Normal;
+out vec4 Position;
 
 out vec3 ViewDir;
 
@@ -30,6 +32,7 @@ uniform mat4 MVP;
 void main()
 {
     TexCoord = VertexTexCoord;
+    Normal = VertexNormal;
 
     //calculations for normal map according to lab sheet
     vec3 norm = normalize(NormalMatrix * VertexNormal);

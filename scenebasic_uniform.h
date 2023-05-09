@@ -18,6 +18,11 @@ private:
 
     Plane plane;
     std::unique_ptr<ObjMesh> flower;
+    std::unique_ptr<ObjMesh> leaf;
+
+    GLuint flowerTex;
+    GLuint leafTex;
+
 
     void compile();
 

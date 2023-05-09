@@ -1,0 +1,15 @@
+﻿  glad.c
+  glslprogram.cpp
+  glutils.cpp
+  objmesh.cpp
+F:\SchoolStuff\3015CW1\COMP3015CW1\helper\objmesh.cpp(188,41): warning C4267: '+=': conversion from 'size_t' to 'int', possible loss of data
+F:\SchoolStuff\3015CW1\COMP3015CW1\helper\objmesh.cpp(194,48): warning C4267: '+=': conversion from 'size_t' to 'int', possible loss of data
+F:\SchoolStuff\3015CW1\COMP3015CW1\helper\objmesh.cpp(198,43): warning C4267: '+=': conversion from 'size_t' to 'int', possible loss of data
+  plane.cpp
+  stb_image.cpp
+  texture.cpp
+  trianglemesh.cpp
+  main.cpp
+  scenebasic_uniform.cpp
+  Generating Code...
+  Project_Template.vcxproj -> F:\SchoolStuff\3015CW1\COMP3015CW1\x64\Debug\Project_Template.exe

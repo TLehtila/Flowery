@@ -109,5 +109,8 @@
     <ClInclude Include="helper\utils.h">
       <Filter>helper</Filter>
     </ClInclude>
+    <ClInclude Include="helper\random.h">
+      <Filter>helper</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

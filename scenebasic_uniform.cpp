@@ -26,8 +26,8 @@ using glm::mat3;
 using glm::mat4;
 
 SceneBasic_Uniform::SceneBasic_Uniform() : plane(50.0f, 50.0f, 1, 1) {
-    flower = ObjMesh::load("media/flowerTri.obj", false, true);
-    leaf = ObjMesh::load("media/leaf.obj", false, true);
+    flower = ObjMesh::load("media/flower1.obj", false, true);
+    leaf = ObjMesh::load("media/leaf1.obj", false, true);
 }
 
 
@@ -38,22 +38,24 @@ void SceneBasic_Uniform::initScene()
     glEnable(GL_DEPTH_TEST);
 
     //top-down view, up vector set to z instead of y
-    view = glm::lookAt(vec3(0.0f, 5.0f, 0.0f), vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f));
+    view = glm::lookAt(vec3(0.0f, 5.0f, 0.0f), vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, 10.0f));
 
     projection = mat4(1.0f);
 
     //initialise rotation
     rotation = 0.0f;
 
-    //load flower texture
-    flowerTex = Texture::loadTexture("media/texture/flowerCol.jpg");
+    //load texture atlas
+    GLuint atlasTex = Texture::loadTexture("media/texture/atlas1.png");
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, flowerTex);
+    glBindTexture(GL_TEXTURE_2D, atlasTex);
+    //glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, 1024, 1024, 0, GL_RGB, GL_FLOAT, &flowerTex);
      
     //load leaf texture
-    leafTex = Texture::loadTexture("media/texture/leafCol.jpg");
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, leafTex);
+    //leafTex = Texture::loadTexture("media/texture/leafCol.jpg");
+    //glActiveTexture(GL_TEXTURE1);
+    //glBindTexture(GL_TEXTURE_2D, leafTex);
+    //glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, 512, 512, 0, GL_RGB, GL_FLOAT, &leafTex);
 
 
 
@@ -104,9 +106,9 @@ void SceneBasic_Uniform::render()
     glClear(GL_DEPTH_BUFFER_BIT);
 
     //set material properties for flower
-    prog.setUniform("Material.Kd", 1.5f, 1.5f, 1.5f);
+    prog.setUniform("Material.Kd", 0.5f, 0.5f, 0.5f);
     prog.setUniform("Material.Ks", 0.1f, 0.1f, 0.1f);
-    prog.setUniform("Material.Ka", 1.5f, 1.5f, 1.5f);
+    prog.setUniform("Material.Ka", 0.2f, 0.2f, 0.2f);
     prog.setUniform("Material.Shininess", 5.0f);
 
     //translation, scaling, rotating, rendering
@@ -116,34 +118,40 @@ void SceneBasic_Uniform::render()
     rotation += 0.1f;
     model = glm::rotate(model, glm::radians(rotation), vec3(0.0f, 1.0f, 0.0f));
     setMatrices();
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, flowerTex);
+    //glActiveTexture(GL_TEXTURE0);
+    //glBindTexture(GL_TEXTURE_2D, flowerTex);
+    ////glTexSubImage2D(GL_TEXTURE_2D, 0, 1, 1, 1024, 1024, GL_RGB, GL_FLOAT, &flowerTex);
     flower->render();
+
+
+    //set material properties for leaf
+    prog.setUniform("Material.Kd", 0.5f, 0.5f, 0.5f);
+    prog.setUniform("Material.Ks", 0.1f, 0.1f, 0.1f);
+    prog.setUniform("Material.Ka", 0.2f, 0.2f, 0.2f);
+    prog.setUniform("Material.Shininess", 5.0f);
 
     //translation, scaling, rotating, rendering
     model = mat4(1.0f);
-    model = glm::translate(model, vec3(1.0f, 1.1f, 0.0f));
+    model = glm::translate(model, vec3(1.0f, 0.5f, 0.0f));
     model = glm::scale(model, vec3(0.5f, 0.5f, 0.5f));
     setMatrices();
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, leafTex);
     leaf->render();
 
     //set material properties for plane
-    prog.setUniform("Material.Kd", 0.1f, 0.1f, 0.1f); 
-    prog.setUniform("Material.Ks", 0.1f, 0.1f, 0.1f);
-    prog.setUniform("Material.Ka", 0.8f, 0.8f, 0.8f);
-    prog.setUniform("Material.Shininess", 5.0f);
+    //prog.setUniform("Material.Kd", 0.1f, 0.1f, 0.1f); 
+    //prog.setUniform("Material.Ks", 0.1f, 0.1f, 0.1f);
+    //prog.setUniform("Material.Ka", 0.8f, 0.8f, 0.8f);
+    //prog.setUniform("Material.Shininess", 5.0f);
 
-    //render plane
-    model = mat4(1.0f);
-    setMatrices();
-    plane.render();
+    ////render plane
+    //model = mat4(1.0f);
+    //setMatrices();
+    //plane.render();
 }
 
 
 void SceneBasic_Uniform::update(float t) {
-    //this is needed even if empty
+    //this is needed even if left empty
 }
 
 void SceneBasic_Uniform::setMatrices() {

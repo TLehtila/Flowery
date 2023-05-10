@@ -20,11 +20,17 @@ private:
     std::unique_ptr<ObjMesh> flower;
     std::unique_ptr<ObjMesh> leaf;
 
-    GLuint flowerTex;
-    GLuint leafTex;
-
+    GLuint fsQuad, fboHandle;
 
     void compile();
+
+    void setupFBO();
+
+    void pass1();
+    void pass2();
+    //void pass3();
+
+    //float gauss(float, float);
 
     float rotation;
 

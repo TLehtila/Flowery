@@ -32,24 +32,25 @@ uniform mat4 MVP;
 void main()
 {
     TexCoord = VertexTexCoord;
-    Normal = VertexNormal;
+    Normal = normalize(NormalMatrix * VertexNormal);
 
     //calculations for normal map according to lab sheet
-    vec3 norm = normalize(NormalMatrix * VertexNormal);
-    vec3 tang = normalize(NormalMatrix * vec3(VertexTangent));
-    vec3 binormal = normalize(cross(norm, tang)) * VertexTangent.w;
+    //vec3 norm = normalize(NormalMatrix * VertexNormal);
+    //vec3 tang = normalize(NormalMatrix * vec3(VertexTangent));
+    //vec3 binormal = normalize(cross(norm, tang)) * VertexTangent.w;
     
-    mat3 toObjectLocal = mat3(tang.x, binormal.x, norm.x, tang.y, binormal.y, norm.y, tang.z, binormal.z, norm.z );
+    //mat3 toObjectLocal = mat3(tang.x, binormal.x, norm.x, tang.y, binormal.y, norm.y, tang.z, binormal.z, norm.z );
 
 
     vec3 pos = vec3(ModelViewMatrix * vec4(VertexPosition, 1.0));
 
     // 3 lights, 3 directions
     for(int i =  0; i < 3; i++) {
-        lightDir[i].direction = toObjectLocal * (lights[i].Position.xyz - pos);
+        //lightDir[i].direction = toObjectLocal * (lights[i].Position.xyz - pos);
+        lightDir[i].direction = lights[i].Position.xyz - pos;
     }
 
-    ViewDir = toObjectLocal * normalize(-pos);
+    ViewDir = normalize(pos);
 
     gl_Position = MVP * vec4(VertexPosition, 1.0);
 }

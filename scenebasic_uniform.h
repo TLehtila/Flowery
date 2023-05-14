@@ -16,11 +16,10 @@ private:
     GLSLProgram prog;
     glm::mat4 rotationMatrix;
 
-    Plane plane;
+    GLuint fsQuad, fboHandle, renderTex;
+
     std::unique_ptr<ObjMesh> flower;
     std::unique_ptr<ObjMesh> leaf;
-
-    GLuint fsQuad, fboHandle;
 
     void compile();
 

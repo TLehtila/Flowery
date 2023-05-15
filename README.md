@@ -5,6 +5,9 @@ Changes from the first coursework are:
 - normal map deleted
 - spinning flower stayed, plane changed out to a leaf
 - flower and leaf appear differently textured, but actually just share a texture atlas
+    Texture atlas
+![atlas1](https://github.com/TLehtila/Flowery/assets/72321149/903927e0-3ed9-4e0f-b65d-2e6505f19e57)
+
 - edge detection implemented
 - gaussian blur implemented, hidden by edges
 - particle fountain with mesh objects attempted, does not work with other render passes

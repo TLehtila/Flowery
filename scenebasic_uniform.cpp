@@ -40,7 +40,8 @@ void SceneBasic_Uniform::initScene()
 
     //projection = mat4(1.0f);
 
-    setupFBO();
+    //setupFBO();
+    setupFBO2();
 
 
     // Array for full-screen quad
@@ -76,8 +77,11 @@ void SceneBasic_Uniform::initScene()
     glBindVertexArray(0);
 
     prog.setUniform("EdgeThreshold", 0.05f);
+    prog.setUniform("EdgeThresholdTwo", 0.005f);
 
-
+    GLuint atlasTex = Texture::loadTexture("media/texture/atlas1.png");
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, atlasTex);
 
     //set each light uniforms
     prog.setUniform("lights[0].La", vec3(0.3f, 0.3f, 0.3f));
@@ -91,6 +95,23 @@ void SceneBasic_Uniform::initScene()
     prog.setUniform("lights[0].Ls", vec3(0.2f, 0.2f, 0.2f));
     prog.setUniform("lights[1].Ls", vec3(0.2f, 0.2f, 0.2f));
     prog.setUniform("lights[2].Ls", vec3(0.2f, 0.2f, 0.2f));
+
+    float weights[5], sum, sigma2 = 8.0f;
+    // Compute and sum the weights
+    weights[0] = gauss(0, sigma2);
+    sum = weights[0];
+    for (int i = 1; i < 5; i++) {
+        weights[i] = gauss(float(i), sigma2);
+        sum += 2 * weights[i];
+    }
+    // Normalize the weights and set the uniform
+    for (int i = 0; i < 5; i++) {
+        std::stringstream uniName;
+        uniName << "Weight[" << i << "]";
+        float val = weights[i] / sum;
+        prog.setUniform(uniName.str().c_str(), val);
+    }
+
 }
 
 void SceneBasic_Uniform::compile()
@@ -112,12 +133,15 @@ void SceneBasic_Uniform::render()
     pass1();
     glFlush();
     pass2();
+    glFlush();
+    pass3();
+    pass4();
 }
 
 void SceneBasic_Uniform::pass1() {
     prog.setUniform("Pass", 1);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, fboHandle);
+    glBindFramebuffer(GL_FRAMEBUFFER, renderFBO);
     glEnable(GL_DEPTH_TEST);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -139,18 +163,36 @@ void SceneBasic_Uniform::pass1() {
 
     projection = glm::perspective(glm::radians(70.0f), (float)width / height, 0.3f, 100.0f);
 
-    //set material properties for leaf
+    //set material properties for leaves
     prog.setUniform("Material.Kd", 0.5f, 0.5f, 0.5f);
     prog.setUniform("Material.Ks", 0.1f, 0.1f, 0.1f);
     prog.setUniform("Material.Ka", 0.2f, 0.2f, 0.2f);
     prog.setUniform("Material.Shininess", 5.0f);
 
-    //translation, scaling, rendering
+    //translation, scaling, rendering leaf 1
     model = mat4(1.0f);
-    model = glm::translate(model, vec3(-0.5f, 0.5f, 0.0f));
-    model = glm::scale(model, vec3(0.5f, 0.5f, 0.5f));
+    model = glm::translate(model, vec3(0.0f, -5.0f, 0.0f));
+    model = glm::scale(model, vec3(1.0f, 1.0f, 1.0f));
 
     model = glm::rotate(model, glm::radians(45.0f), vec3(0.0f, 1.0f, 0.0f));
+    setMatrices();
+    leaf->render();
+
+    //translation, scaling, rendering leaf 2
+    model = mat4(1.0f);
+    model = glm::translate(model, vec3(0.0f, -5.0f, 0.0f));
+    model = glm::scale(model, vec3(1.0f, 1.0f, 1.0f));
+
+    model = glm::rotate(model, glm::radians(-45.0f), vec3(0.0f, 1.0f, 0.0f));
+    setMatrices();
+    leaf->render();
+
+    //translation, scaling, rendering leaf 3
+    model = mat4(1.0f);
+    model = glm::translate(model, vec3(0.0f, -5.0f, 0.0f));
+    model = glm::scale(model, vec3(1.0f, 1.0f, 1.0f));
+
+    model = glm::rotate(model, glm::radians(180.0f), vec3(0.0f, 1.0f, 0.0f));
     setMatrices();
     leaf->render();
 
@@ -158,7 +200,7 @@ void SceneBasic_Uniform::pass1() {
     //set material properties for flower
     prog.setUniform("Material.Kd", 0.5f, 0.5f, 0.5f);
     prog.setUniform("Material.Ks", 0.1f, 0.1f, 0.1f);
-    prog.setUniform("Material.Ka", 0.2f, 0.2f, 0.2f);
+    prog.setUniform("Material.Ka", 0.5f, 0.5f, 0.5f);
     prog.setUniform("Material.Shininess", 5.0f);
 
     //translation, scaling, rendering, rotating
@@ -194,6 +236,39 @@ void SceneBasic_Uniform::pass2()
     glBindVertexArray(0);
 }
 
+void SceneBasic_Uniform::pass3()
+{
+    prog.setUniform("Pass", 3);
+    glBindFramebuffer(GL_FRAMEBUFFER, intermediateFBO);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, renderTex2);
+    glDisable(GL_DEPTH_TEST);
+    glClear(GL_COLOR_BUFFER_BIT);
+    model = mat4(1.0f);
+    view = mat4(1.0f);
+    projection = mat4(1.0f);
+    setMatrices();
+    // Render the full-screen quad
+    glBindVertexArray(fsQuad);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+}
+
+void SceneBasic_Uniform::pass4()
+{
+    prog.setUniform("Pass", 4);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, intermediateTex);
+    glClear(GL_COLOR_BUFFER_BIT);
+    model = mat4(1.0f);
+    view = mat4(1.0f);
+    projection = mat4(1.0f);
+    setMatrices();
+    // Render the full-screen quad
+    glBindVertexArray(fsQuad);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+}
+
 void SceneBasic_Uniform::update(float t) {
     //this is needed even if left empty
 }
@@ -218,10 +293,11 @@ void SceneBasic_Uniform::resize(int w, int h)
     projection = glm::perspective(glm::radians(70.0f), (float)w / h, 0.3f, 100.0f);
 }
 
-void SceneBasic_Uniform::setupFBO() {
+void SceneBasic_Uniform::setupFBO2() {
     // Generate and bind the framebuffer
-    glGenFramebuffers(1, &fboHandle);
-    glBindFramebuffer(GL_FRAMEBUFFER, fboHandle);
+    glGenFramebuffers(1, &renderFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, renderFBO);
+
     // Create the texture object
     glGenTextures(1, &renderTex);
     glBindTexture(GL_TEXTURE_2D, renderTex);
@@ -232,6 +308,21 @@ void SceneBasic_Uniform::setupFBO() {
     // Bind the texture to the FBO
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
         renderTex, 0);
+
+
+    // Create the texture object
+    glActiveTexture(GL_TEXTURE1); // Use texture unit 0
+    glGenTextures(1, &renderTex2);
+    glBindTexture(GL_TEXTURE_2D, renderTex2);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+    // Bind the texture to the FBO
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+        renderTex2, 0);
+
+
     // Create the depth buffer
     GLuint depthBuf;
     glGenRenderbuffers(1, &depthBuf);
@@ -245,4 +336,34 @@ void SceneBasic_Uniform::setupFBO() {
     glDrawBuffers(1, drawBuffers);
     // Unbind the framebuffer, and revert to default framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    // Generate and bind the framebuffer
+    glGenFramebuffers(1, &intermediateFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, intermediateFBO);
+
+
+    // Create the texture object
+    glGenTextures(1, &intermediateTex);
+    glActiveTexture(GL_TEXTURE0); // Use texture unit 0
+    glBindTexture(GL_TEXTURE_2D, intermediateTex);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+    // Bind the texture to the FBO
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+        intermediateTex, 0);
+
+
+    // No depth buffer needed for this FBO
+    // Set the targets for the fragment output variables
+    glDrawBuffers(1, drawBuffers);
+    // Unbind the framebuffer, and revert to default framebuffer
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+float SceneBasic_Uniform::gauss(float x, float sigma2)
+{
+    double coeff = 1.0 / (glm::two_pi<double>() * sigma2);
+    double expon = -(x * x) / (2.0 * sigma2);
+    return (float)(coeff * exp(expon));
 }

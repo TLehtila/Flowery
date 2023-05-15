@@ -16,20 +16,25 @@ private:
     GLSLProgram prog;
     glm::mat4 rotationMatrix;
 
-    GLuint fsQuad, fboHandle, renderTex;
+    GLuint fsQuad, fboHandle, fboHandle2, renderTex, renderTex2;
+
+    GLuint renderFBO, intermediateFBO;
+    GLuint intermediateTex;
 
     std::unique_ptr<ObjMesh> flower;
     std::unique_ptr<ObjMesh> leaf;
 
     void compile();
 
-    void setupFBO();
+    //void setupFBO();
+    void setupFBO2();
 
     void pass1();
     void pass2();
-    //void pass3();
+    void pass3();
+    void pass4();
 
-    //float gauss(float, float);
+    float gauss(float, float);
 
     float rotation;
 

@@ -3,8 +3,8 @@
 in vec2 TexCoord;
 
 in vec3 ViewDir;
-in vec3 Normal;
-in vec4 Position;
+in vec3 fNormal;
+in vec3 fPosition;
 
 //take in the 3 light directions
 in struct LightDirection {
@@ -38,7 +38,8 @@ uniform struct MaterialInfo {
     float Shininess;
 } Material;
 
-vec3 blinnphong(int index, vec3 n, vec4 pos) {
+
+vec3 blinnphong(int index, vec3 n, vec3 pos) {
     vec3 texColour = texture(AtlasTex, TexCoord).rgb;
 
     vec3 s = normalize(vec3(lightDir[index]));
@@ -47,15 +48,13 @@ vec3 blinnphong(int index, vec3 n, vec4 pos) {
 
     //multiply the material properties with the texture
     vec3 diffuse = lights[index].Ld * Material.Kd * texColour * sDotN;
-    vec3 ambient = lights[index].La * Material.Ka * texColour * sDotN;
-    //vec3 diffuse = lights[index].Ld * Material.Kd * sDotN;
-    //vec3 ambient = lights[index].La * Material.Ka * sDotN;
+    vec3 ambient = lights[index].La * Material.Ka * texColour;
 
     vec3 spec = vec3(0.0);
 
     
     if(sDotN > 0) {
-        vec3 v = normalize(ViewDir);
+        vec3 v = normalize(-pos.xyz);
         vec3 h = normalize(v + s);
         spec = lights[index].Ls * Material.Ks * pow(max(dot(h, n), 0.0), Material.Shininess);
     }
@@ -64,11 +63,11 @@ vec3 blinnphong(int index, vec3 n, vec4 pos) {
     return ambient + diffuse + spec;
 }
 
-vec4 pass1() {
+vec4 pass1() {      //blinnphong call 3 times for 3 lights
 
     vec3 Colour = vec3(0.0);
     for(int i = 0; i < 3; i++) {
-        Colour += blinnphong(i, normalize(Normal), Position);
+        Colour += blinnphong(i, normalize(fNormal), fPosition);
     }
 
     vec4 finalColour = vec4(Colour, 1.0f);
@@ -81,7 +80,7 @@ float luminance( vec3 color ) {
     return dot(lum, color);
 }
 
-vec4 pass2() {
+vec4 pass2() {      // edge detection
     ivec2 pix = ivec2(gl_FragCoord.xy); //we grab a pixel to check if edge
     //pick neighboutring pixels for convolution filter
     //check lecture slides
@@ -108,7 +107,7 @@ vec4 pass2() {
 
 
 
-vec4 pass3() {
+vec4 pass3() {      // gaussian blur
     ivec2 pix = ivec2( gl_FragCoord.xy );
     vec4 sum = texelFetch(RenderTexTwo, pix, 0) * Weight[0];
     sum += texelFetchOffset( RenderTexTwo, pix, 0, ivec2(0,1) ) * Weight[1];
@@ -123,7 +122,7 @@ vec4 pass3() {
     return sum;
 }
 
-vec4 pass4() {
+vec4 pass4() {      // gaussian blur
     ivec2 pix = ivec2( gl_FragCoord.xy );
     vec4 sum = texelFetch(RenderTex, pix, 0) * Weight[0];
     sum += texelFetchOffset( RenderTexTwo, pix, 0, ivec2(1,0) ) * Weight[1];
@@ -140,13 +139,14 @@ vec4 pass4() {
 
 void main() {
 
-    if(Pass == 1) {
+    if(Pass == 1 || Pass == 0) {
         FragColour = pass1();
     } else if (Pass == 2) {
         FragColour = pass2();
     } else if (Pass == 3) {
         FragColour = pass3();
     } else if (Pass == 4) {
-        FragColour = pass4() + pass2();
+        FragColour = pass4() + pass2();     //to see blur without edges comment this line and
+        //FragColour = pass4();             //<--       uncomment this line
     }
 }

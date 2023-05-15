@@ -57,6 +57,9 @@
     <ClCompile Include="helper\objmesh.cpp">
       <Filter>helper</Filter>
     </ClCompile>
+    <ClCompile Include="helper\grid.cpp">
+      <Filter>helper</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="shader\basic_uniform.frag">
@@ -110,6 +113,12 @@
       <Filter>helper</Filter>
     </ClInclude>
     <ClInclude Include="helper\random.h">
+      <Filter>helper</Filter>
+    </ClInclude>
+    <ClInclude Include="helper\particleutils.h">
+      <Filter>helper</Filter>
+    </ClInclude>
+    <ClInclude Include="helper\grid.h">
       <Filter>helper</Filter>
     </ClInclude>
   </ItemGroup>

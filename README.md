@@ -38,3 +38,6 @@ for both resulted in warped flower and leaves.
 
 https://github.com/TLehtila/Flowery/assets/72321149/4f90ccad-0a9c-4316-a874-9e76e74ecad6
 
+
+This project has been coded and tested on Windows 10 and Visual Studio 2022.
+Video Link: https://youtu.be/_7MZpwimb3w
